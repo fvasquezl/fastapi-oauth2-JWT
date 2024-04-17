@@ -7,9 +7,11 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.db.core import get_db
 from app.db.user import(
     User,
-    get_current_active_user,
     create_db_user,
     UserCreate
+)
+from app.db.token import(
+    get_current_active_user
 )
 from sqlalchemy.orm import Session
 
@@ -41,7 +43,6 @@ async def read_own_items(
     return [{"item_id": "Foo", "owner": current_user.username}]
 
 
-#User Routes
 
 @router.post("/create")
 def create_user(

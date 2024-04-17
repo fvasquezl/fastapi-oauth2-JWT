@@ -3,19 +3,15 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from app.db.core import get_db
-from app.db.user import(
+from app.db.token import(
     Token,
     authenticate_user,
-    create_access_token,
+    create_access_token
 )
 from sqlalchemy.orm import Session
+from app.lib.settings import settings
 
-
-# to get a string like this run:
-# openssl rand -hex 32
-# SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
-# # ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = int(settings.ACCESS_TOKEN_EXPIRE_IN_MINUTES)
 
 
 router = APIRouter(
@@ -41,13 +37,6 @@ async def login_for_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     ) 
     return Token(access_token=access_token, token_type="bearer")
-
-
-# @router.get("/me/", response_model=User)
-# async def read_users_me(
-#     current_user: Annotated[User, Depends(get_current_active_user)],
-# ):
-#     return current_user
 
 
 
