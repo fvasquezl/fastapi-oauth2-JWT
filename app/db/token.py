@@ -6,9 +6,9 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 from app.db.core import DBUser, get_db
 from sqlalchemy.orm import Session
-from app.lib.hasher import Hasher
+from app.libs.hasher import Hasher
 from app.db.user import User
-from app.lib.settings import settings
+from app.libs.settings import settings
 
 
 # to get a string like this run:
@@ -34,7 +34,7 @@ def get_user(db, username: str):
     return user
 
 
-def authenticate_user(db,username: str, password: str):
+def authenticate_user(db, username: str, password: str):
     user = get_user(db, username)
     print(user.username)
     if not user:
@@ -55,7 +55,9 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 
-async def get_current_user(db: Session = Depends(get_db), token: str= Depends(oauth2_scheme)):
+async def get_current_user(
+    db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

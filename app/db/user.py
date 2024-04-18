@@ -1,14 +1,16 @@
 from datetime import datetime
-from typing import  Optional
+from typing import Optional
 from pydantic import BaseModel
 from app.db.core import DBUser
 from sqlalchemy.orm import Session
-from app.lib.hasher import Hasher
+from app.libs.hasher import Hasher
+
 
 class UserBase(BaseModel):
     username: str
     email: str | None = None
     full_name: str | None = None
+
 
 class UserCreate(UserBase):
     hashed_password: str
