@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Body, Depends, HTTPException, Request
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
-from app.db.core import get_db, NotFoundError
-from app.db.post import (
+from app.categories.category_schema import read_db_category
+from app.db.core import DBCategory, get_db, NotFoundError
+from app.posts.post_schema import (
     Post,
     PostCreate,
     PostUpdate,
@@ -12,10 +13,11 @@ from app.db.post import (
     update_db_post,
 )
 
+
 from typing import Annotated, List
 
-from app.db.token import get_current_active_user
-from app.db.user import User
+from app.tokens.token_schema import get_current_active_user
+from app.users.user_schema import User
 
 router = APIRouter(
     prefix="/posts",
@@ -26,12 +28,28 @@ router = APIRouter(
 @router.post("/")
 def create_post(
     current_user: Annotated[User, Depends(get_current_active_user)],
+    category_id: int,
     post: PostCreate,
     db: Session = Depends(get_db),
 ) -> Post:
-    # db_post = create_db_post(category_id, post, db)
-    db_post = create_db_post(current_user, post, db)
-    return Post(**db_post.__dict__)
+    try:
+        category = read_db_category(category_id, db)
+    except ValidationError as e:
+        print(e)
+
+
+# category = db.query(DBCategory).filter(DBCategory.id == category_id).first()
+# if not category:
+#     raise HTTPException(
+#         status_code=404,
+#         detail="Item not found",
+#         headers={"X-Error": "There goes my error"},
+#     )
+# else:
+
+#     db_post = create_db_post(current_user, category_id, post, db)
+
+#     return Post(**db_post.__dict__)
 
 
 # @router.get("/{post_id}")

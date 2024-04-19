@@ -48,6 +48,17 @@ class DBUser(TimeStampedModel):
     )
 
 
+class DBCategory(Base):
+    __tablename__ = "categories"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
+    name: Mapped[str] = mapped_column(String(80), nullable=False)
+    slug: Mapped[str] = mapped_column(String(80), nullable=False, unique=True)
+
+    """relationship one to many to Posts"""
+    posts: Mapped[List["DBPost"]] = relationship(back_populates="category")
+
+
 class DBPost(TimeStampedModel):
     __tablename__ = "post"
 
@@ -58,13 +69,15 @@ class DBPost(TimeStampedModel):
 
     """Relationship Many to One To User"""
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
-        unique=True,
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
-
     user: Mapped["DBUser"] = relationship(back_populates="posts")
+
+    """Relationship Many to One To Category"""
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("categories.id", ondelete="CASCADE"), nullable=False
+    )
+    category: Mapped["DBCategory"] = relationship(back_populates="posts")
 
 
 Base.metadata.create_all(bind=engine)

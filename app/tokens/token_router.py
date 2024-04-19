@@ -3,9 +3,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from app.db.core import get_db
-from app.db.token import Token, authenticate_user, create_access_token
+from app.tokens.token_schema import Token, authenticate_user, create_access_token
 from sqlalchemy.orm import Session
-from app.libs.settings import settings
+from app.tokens.env_settings import settings
 
 
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES

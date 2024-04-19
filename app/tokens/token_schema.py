@@ -6,9 +6,9 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 from app.db.core import DBUser, get_db
 from sqlalchemy.orm import Session
-from app.libs.hasher import Hasher
-from app.db.user import User
-from app.libs.settings import settings
+from app.tokens.hasher import Hasher
+from app.users.user_schema import User
+from app.tokens.env_settings import settings
 
 
 # to get a string like this run:
@@ -36,7 +36,7 @@ def get_user(db, username: str):
 
 def authenticate_user(db, username: str, password: str):
     user = get_user(db, username)
-    print(user.username)
+    # print(user.username)
     if not user:
         return False
     if not Hasher.verify_password(password, user.hashed_password):

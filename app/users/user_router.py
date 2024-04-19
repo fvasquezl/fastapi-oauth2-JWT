@@ -1,8 +1,8 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, Request
 from app.db.core import get_db
-from app.db.user import User, create_db_user, UserCreate
-from app.db.token import get_current_active_user
+from app.users.user_schema import User, create_db_user, UserCreate
+from app.tokens.token_schema import get_current_active_user
 from sqlalchemy.orm import Session
 
 
@@ -27,8 +27,7 @@ async def read_own_items(
 
 @router.post("/create")
 def create_user(
-    current_user: Annotated[User, Depends(get_current_active_user)],
-    request: Request,
+    # current_user: Annotated[User, Depends(get_current_active_user)],
     user: UserCreate,
     db: Session = Depends(get_db),
 ) -> User:

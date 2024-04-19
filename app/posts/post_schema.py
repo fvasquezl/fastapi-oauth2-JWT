@@ -4,9 +4,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from app.db.core import DBPost, NotFoundError
-from app.db.token import get_current_active_user
-
-from app.db.user import read_db_user
+from app.categories.category_schema import read_db_category
 
 
 class PostBase(BaseModel):
@@ -25,7 +23,7 @@ class PostUpdate(BaseModel):
 
 class Post(PostBase):
     id: int
-    # category_id: int
+    category_id: int
     user_id: int
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
@@ -41,17 +39,18 @@ def read_db_post(post_id: int, session: Session) -> DBPost:
     return db_post
 
 
-def create_db_post(current_user, post: PostCreate, session: Session) -> DBPost:
-    # user = get_current_active_user()
-    # category = read_db_category(category_id, session)
+def create_db_post(
+    current_user, category_id: int, post: PostCreate, session: Session
+) -> DBPost:
+    category = read_db_category(category_id, session)
+    # category_id = category.id
     db_post = DBPost(**post.model_dump())
 
     # for tag_id in tags:
     #     tag = read_db_tag(tag_id, session)
     #     db_post.tags.append(tag)
-
     db_post.user = current_user
-    # db_post.category = category
+    db_post.category = category
     session.add(db_post)
     session.commit()
     session.refresh(db_post)
