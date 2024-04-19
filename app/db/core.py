@@ -1,6 +1,8 @@
 from typing import List
 from sqlalchemy import (
     DateTime,
+    ForeignKey,
+    String,
     create_engine,
 )
 from sqlalchemy.orm import relationship
@@ -11,6 +13,9 @@ from datetime import datetime
 
 
 DATABASE_URL = "sqlite:///./test.db"
+
+engine = create_engine(DATABASE_URL)
+session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 class Base(DeclarativeBase):
@@ -37,9 +42,30 @@ class DBUser(TimeStampedModel):
     hashed_password: Mapped[str] = mapped_column(nullable=False)
     disabled: Mapped[bool] = mapped_column(unique=False, default=False)
 
+    """relationship one to many to Posts"""
+    posts: Mapped[List["DBPost"]] = relationship(
+        back_populates="user", passive_deletes=True
+    )
 
-engine = create_engine(DATABASE_URL)
-session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+class DBPost(TimeStampedModel):
+    __tablename__ = "post"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
+    name: Mapped[str] = mapped_column(String(80), nullable=False)
+    slug: Mapped[str] = mapped_column(String(80), nullable=False, unique=True)
+    description: Mapped[str]
+
+    """Relationship Many to One To User"""
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+        unique=True,
+    )
+
+    user: Mapped["DBUser"] = relationship(back_populates="posts")
+
 
 Base.metadata.create_all(bind=engine)
 
