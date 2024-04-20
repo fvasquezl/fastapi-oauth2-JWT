@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Body, Depends, HTTPException, Request
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
-from app.categories.category_schema import read_db_category
+from app.categories.category_schema import is_valid_category, read_db_category
 from app.db.core import DBCategory, get_db, NotFoundError
 from app.posts.post_schema import (
     Post,
@@ -32,24 +32,15 @@ def create_post(
     post: PostCreate,
     db: Session = Depends(get_db),
 ) -> Post:
-    try:
-        category = read_db_category(category_id, db)
-    except ValidationError as e:
-        print(e)
-
-
-# category = db.query(DBCategory).filter(DBCategory.id == category_id).first()
-# if not category:
-#     raise HTTPException(
-#         status_code=404,
-#         detail="Item not found",
-#         headers={"X-Error": "There goes my error"},
-#     )
-# else:
-
-#     db_post = create_db_post(current_user, category_id, post, db)
-
-#     return Post(**db_post.__dict__)
+    if not is_valid_category(db, category_id):
+        raise HTTPException(
+            status_code=404,
+            detail="Category does not exist",
+            headers={"X-Error": "Category does not exist"},
+        )
+    else:
+        db_post = create_db_post(current_user, category_id, post, db)
+    return Post(**db_post.__dict__)
 
 
 # @router.get("/{post_id}")

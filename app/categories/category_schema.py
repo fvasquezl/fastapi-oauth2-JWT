@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated, Optional, List
+from typing import Annotated, Dict, Optional, List
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
@@ -38,20 +38,21 @@ class CategoryUpdate(CategoryBase):
 
 class Category(CategoryBase):
     id: int
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
 
 
+def is_valid_category(db: Session, category_id: int) -> bool:
+    category = db.query(DBCategory).filter(DBCategory.id == category_id).first()
+    return category is not None
+
+
 def read_db_category(category_id: int, session: Session) -> DBCategory:
     db_category = session.query(DBCategory).filter(DBCategory.id == category_id).first()
     if not db_category:
-        return JSONResponse(status_code=404, content={"message": "Category not found"})
-    return JSONResponse(status_code=200, content=jsonable_encoder(db_category))
-    # else:
-    #     raise NotFoundError(f"category with id {category_id} not found.")
+        raise NotFoundError(f"category with id {category_id} not found.")
+    return db_category
 
 
 def read_db_posts_for_category(category_id: int, session: Session) -> list[DBPost]:

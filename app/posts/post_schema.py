@@ -2,9 +2,10 @@ from datetime import datetime
 
 from pydantic import BaseModel
 from typing import List, Optional
+from slugify import slugify
 from sqlalchemy.orm import Session
 from app.db.core import DBPost, NotFoundError
-from app.categories.category_schema import read_db_category
+from app.categories.category_schema import Category, read_db_category
 
 
 class PostBase(BaseModel):
@@ -13,7 +14,7 @@ class PostBase(BaseModel):
 
 
 class PostCreate(PostBase):
-    slug: str
+    pass
 
 
 class PostUpdate(BaseModel):
@@ -23,6 +24,7 @@ class PostUpdate(BaseModel):
 
 class Post(PostBase):
     id: int
+    slug: str
     category_id: int
     user_id: int
     created_at: Optional[datetime] = None
@@ -42,15 +44,11 @@ def read_db_post(post_id: int, session: Session) -> DBPost:
 def create_db_post(
     current_user, category_id: int, post: PostCreate, session: Session
 ) -> DBPost:
-    category = read_db_category(category_id, session)
-    # category_id = category.id
+    slug = slugify(post.name)
     db_post = DBPost(**post.model_dump())
-
-    # for tag_id in tags:
-    #     tag = read_db_tag(tag_id, session)
-    #     db_post.tags.append(tag)
+    db_post.slug = slug
     db_post.user = current_user
-    db_post.category = category
+    db_post.category_id = category_id
     session.add(db_post)
     session.commit()
     session.refresh(db_post)
