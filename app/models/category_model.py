@@ -1,6 +1,7 @@
 from typing import Optional
 from fastapi import Depends, HTTPException
 from pydantic import BaseModel, field_validator
+from slugify import slugify
 from app.db.core import DBCategory, DBPost, NotFoundError, get_db, session_local
 from sqlalchemy.orm import Session
 import re
@@ -26,22 +27,7 @@ class CategoryUpdate(CategoryBase):
 
 class Category(CategoryBase):
     id: int
-    slug: Optional[str]
-
-    @field_validator("slug")
-    def generate_slug(cls, v, values):
-        if v:
-            return v
-        if "name" in values:
-            return cls.slugify(values["name"])
-        return None
-
-    @staticmethod
-    def slugify(text: str) -> str:
-        text = text.lower()
-        text = re.sub(r"[^\w\s-]", "", text)
-        text = re.sub(r"\s+", "-", text)
-        return text
+    slug: str
 
     class Config:
         from_attributes = True
@@ -75,12 +61,17 @@ def read_db_posts_for_category(category_id: int, session: Session) -> list[DBPos
 
 
 def create_db_category(category: CategoryCreate, session: Session) -> DBCategory:
-    db_category = DBCategory(**category.model_dump(exclude_none=True))
-    session.add(db_category)
-    session.commit()
-    session.refresh(db_category)
-
-    return db_category
+    try:
+        slug = slugify(category.name)
+        db_category = DBCategory(**category.model_dump(exclude_none=True))
+        db_category.slug = slug
+        session.add(db_category)
+        session.commit()
+        session.refresh(db_category)
+        return db_category
+    except Exception as e:
+        session.rollback()
+        raise e
 
 
 def update_db_category(
