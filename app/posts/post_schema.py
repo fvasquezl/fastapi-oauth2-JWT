@@ -1,10 +1,10 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import List, Optional
 from slugify import slugify
 from sqlalchemy.orm import Session
-from app.db.core import DBPost, NotFoundError
+from app.db.core import DBPost, NotFoundError, session_local
 from app.categories.category_schema import Category, read_db_category
 
 
@@ -14,11 +14,18 @@ class PostBase(BaseModel):
 
 
 class PostCreate(PostBase):
-    pass
+
+    @field_validator("name")
+    def title_must_be_unique(cls, v, values):
+        db = session_local()
+        post_with_same_name = db.query(DBPost).filter(DBPost.name == v).first()
+        if post_with_same_name:
+            raise ValueError("Name must be unique")
+        return v
 
 
 class PostUpdate(BaseModel):
-    name: Optional[int] = None
+    name: Optional[str] = None
     description: Optional[str] = None
 
 

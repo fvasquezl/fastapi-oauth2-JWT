@@ -1,9 +1,10 @@
 from datetime import datetime
 from typing import Annotated, Dict, Optional, List
+from fastapi import Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
-from app.db.core import DBCategory, DBPost, NotFoundError
+from app.db.core import DBCategory, DBPost, NotFoundError, get_db, session_local
 from sqlalchemy.orm import Session
 import re
 
@@ -13,6 +14,21 @@ class CategoryBase(BaseModel):
 
 
 class CategoryCreate(CategoryBase):
+    @field_validator("name")
+    def name_must_be_unique(cls, v, values):
+        db = session_local()
+        post_with_same_name = db.query(DBCategory).filter(DBCategory.name == v).first()
+        if post_with_same_name:
+            raise ValueError("Name must be unique")
+        return v
+
+
+class CategoryUpdate(CategoryBase):
+    name: Optional[str] = None
+
+
+class Category(CategoryBase):
+    id: int
     slug: Optional[str]
 
     @field_validator("slug")
@@ -30,17 +46,19 @@ class CategoryCreate(CategoryBase):
         text = re.sub(r"\s+", "-", text)
         return text
 
-
-class CategoryUpdate(CategoryBase):
-    name: Optional[str] = None
-    slug: Optional[str] = None
-
-
-class Category(CategoryBase):
-    id: int
-
     class Config:
         from_attributes = True
+
+
+def get_category_from_id(category_id: int, db: Session = Depends(get_db)) -> DBCategory:
+    category = db.query(DBCategory).filter(DBCategory.id == category_id).first()
+    if not category:
+        raise HTTPException(
+            status_code=404,
+            detail="Category does not exist",
+            headers={"X-Error": "Category does not exist"},
+        )
+    return category
 
 
 def is_valid_category(db: Session, category_id: int) -> bool:
