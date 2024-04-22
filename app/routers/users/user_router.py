@@ -1,8 +1,8 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, Request
 from app.db.core import get_db
-from app.users.user_schema import User, create_db_user, UserCreate
-from app.tokens.token_schema import get_current_active_user
+from app.models.user_model import User, create_db_user, UserCreate
+from app.models.token_model import get_current_active_user
 from sqlalchemy.orm import Session
 
 

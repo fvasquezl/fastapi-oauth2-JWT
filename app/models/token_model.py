@@ -6,9 +6,9 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 from app.db.core import DBUser, get_db
 from sqlalchemy.orm import Session
-from app.tokens.hasher import Hasher
-from app.users.user_schema import User
-from app.tokens.env_settings import settings
+from app.routers.tokens.hasher import Hasher
+from app.models.user_model import User
+from app.routers.tokens.env_settings import settings
 
 
 # to get a string like this run:

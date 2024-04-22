@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel
 from app.db.core import DBUser
 from sqlalchemy.orm import Session
-from app.tokens.hasher import Hasher
+from app.routers.tokens.hasher import Hasher
 
 
 class UserBase(BaseModel):

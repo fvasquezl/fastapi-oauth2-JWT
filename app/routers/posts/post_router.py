@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Body, Depends, HTTPException, Request
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
-from app.categories.category_schema import (
+from app.models.category_model import (
     Category,
     get_category_from_id,
     is_valid_category,
     read_db_category,
 )
 from app.db.core import DBCategory, get_db, NotFoundError
-from app.posts.post_schema import (
+from app.models.post_model import (
     Post,
     PostCreate,
     PostUpdate,
@@ -21,8 +21,8 @@ from app.posts.post_schema import (
 
 from typing import Annotated, List
 
-from app.tokens.token_schema import get_current_active_user
-from app.users.user_schema import User
+from app.models.token_model import get_current_active_user
+from app.models.user_model import User
 
 router = APIRouter(
     prefix="/posts",

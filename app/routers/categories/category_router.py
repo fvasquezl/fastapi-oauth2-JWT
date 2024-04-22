@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from app.db.core import NotFoundError, get_db
-from app.categories.category_schema import (
+from app.models.category_model import (
     Category,
     CategoryCreate,
     CategoryUpdate,
@@ -12,7 +12,7 @@ from app.categories.category_schema import (
     # read_db_posts_for_category,
 )
 
-from app.posts.post_schema import Post
+from app.models.post_model import Post
 
 
 router = APIRouter(

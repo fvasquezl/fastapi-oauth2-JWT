@@ -5,7 +5,7 @@ from typing import List, Optional
 from slugify import slugify
 from sqlalchemy.orm import Session
 from app.db.core import DBPost, NotFoundError, session_local
-from app.categories.category_schema import Category, read_db_category
+from app.models.category_model import Category, read_db_category
 
 
 class PostBase(BaseModel):

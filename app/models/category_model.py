@@ -1,9 +1,6 @@
-from datetime import datetime
-from typing import Annotated, Dict, Optional, List
+from typing import Optional
 from fastapi import Depends, HTTPException
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, field_validator
 from app.db.core import DBCategory, DBPost, NotFoundError, get_db, session_local
 from sqlalchemy.orm import Session
 import re
