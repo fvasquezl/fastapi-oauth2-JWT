@@ -11,6 +11,7 @@ from app.db.core import DBCategory, get_db, NotFoundError
 from app.models.post_model import (
     Post,
     PostCreate,
+    PostCreateWithTags,
     PostUpdate,
     create_db_post,
     delete_db_post,

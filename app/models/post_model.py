@@ -8,6 +8,7 @@ from slugify import slugify
 from sqlalchemy.orm import Session
 from app.db.core import DBPost, NotFoundError, session_local
 from app.models.category_model import Category, read_db_category
+from app.models.tag_model import Tag, read_db_tag
 
 
 class PostBase(BaseModel):
@@ -24,6 +25,10 @@ class PostCreate(PostBase):
         if post_with_same_name:
             raise ValueError("Name must be unique")
         return v
+
+
+class PostCreateWithTags(PostCreate):
+    tags: Optional[List[int]] = None
 
 
 class PostUpdate(BaseModel):
