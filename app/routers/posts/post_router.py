@@ -36,9 +36,10 @@ def create_post(
     current_user: Annotated[User, Depends(get_current_active_user)],
     category: Annotated[Category, Depends(get_category_from_id)],
     post: PostCreate,
+    tags: List[int] = Body(...),
     db: Session = Depends(get_db),
 ) -> Post:
-    db_post = create_db_post(current_user, category, post, db)
+    db_post = create_db_post(current_user, category, post, tags, db)
     return Post(**db_post.__dict__)
 
 

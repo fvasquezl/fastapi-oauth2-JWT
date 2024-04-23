@@ -49,9 +49,9 @@ def is_valid_tag(db: Session, tag_id: int) -> bool:
     return tag is not None
 
 
-def read_db_tag(tag_id: int, session: Session) -> DBTag:
-    db_tag = session.query(DBTag).filter(DBTag.id == tag_id).first()
-    if not db_tag:
+def read_db_tag(tag_id: int, db: Session) -> DBTag:
+    db_tag = db.query(DBTag).filter(DBTag.id == tag_id).first()
+    if db_tag is None:
         raise NotFoundError(f"tag with id {tag_id} not found.")
     return db_tag
 

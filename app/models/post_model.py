@@ -56,13 +56,16 @@ def read_db_post(post_id: int, session: Session) -> DBPost:
 
 
 def create_db_post(
-    current_user, category: Category, post: PostCreate, session: Session
+    current_user, category: Category, post: PostCreate, tags: Tag, session: Session
 ) -> DBPost:
     slug = slugify(post.name)
     db_post = DBPost(**post.model_dump())
     db_post.slug = slug
     db_post.author = current_user
     db_post.category = category
+    for tag_id in tags:
+        tag = read_db_tag(tag_id, session)
+        db_post.tags.append(tag)
     try:
         session.add(db_post)
         session.commit()
