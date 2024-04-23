@@ -37,7 +37,7 @@ def create_post(
     post: PostCreate,
     db: Session = Depends(get_db),
 ) -> Post:
-    db_post = create_db_post(current_user, category.id, post, db)
+    db_post = create_db_post(current_user, category, post, db)
     return Post(**db_post.__dict__)
 
 

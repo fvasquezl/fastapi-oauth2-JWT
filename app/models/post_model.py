@@ -1,5 +1,7 @@
 from datetime import datetime
+from sqlite3 import IntegrityError
 
+from fastapi import HTTPException
 from pydantic import BaseModel, field_validator
 from typing import List, Optional
 from slugify import slugify
@@ -33,7 +35,7 @@ class Post(PostBase):
     id: int
     slug: str
     category_id: int
-    user_id: int
+    author_id: int
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -49,16 +51,28 @@ def read_db_post(post_id: int, session: Session) -> DBPost:
 
 
 def create_db_post(
-    current_user, category_id: int, post: PostCreate, session: Session
+    current_user, category: Category, post: PostCreate, session: Session
 ) -> DBPost:
     slug = slugify(post.name)
     db_post = DBPost(**post.model_dump())
     db_post.slug = slug
-    db_post.user = current_user
-    db_post.category_id = category_id
-    session.add(db_post)
-    session.commit()
-    session.refresh(db_post)
+    db_post.author = current_user
+    db_post.category = category
+    try:
+        session.add(db_post)
+        session.commit()
+        session.refresh(db_post)
+    except IntegrityError as e:
+        session.rollback()
+        # Manejar error de integridad, por ejemplo, una clave duplicada
+        raise HTTPException(
+            status_code=400, detail="Error de integridad: {}".format(str(e))
+        )
+    except Exception as e:
+        # Manejar otros errores generales
+        session.rollback()
+        raise HTTPException(status_code=500, detail="Error al crear el post")
+
     return db_post
 
 

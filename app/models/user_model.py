@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from app.db.core import DBUser
 from sqlalchemy.orm import Session
 from app.routers.tokens.hasher import Hasher
@@ -8,7 +8,7 @@ from app.routers.tokens.hasher import Hasher
 
 class UserBase(BaseModel):
     username: str
-    email: str | None = None
+    email: EmailStr
     full_name: str | None = None
 
 
@@ -18,7 +18,7 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     id: int
-    disabled: bool | None = None
+    is_disabled: bool | None = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
