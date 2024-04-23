@@ -94,9 +94,8 @@ class DBRole(TimeStampedModel):
     slug: Mapped[str] = mapped_column(String(80), nullable=False, unique=True)
 
     """
-    Relación muchos a muchos con la tabla DBUser a través de la tabla de 
-    asociación DBUserRole. Un rol puede ser asignado a varios usuarios y un 
-    usuario puede tener varios roles.
+    Relación muchos a muchos con la tabla DBUser a través de la tabla de asociación DBUserRole. 
+    Un rol puede ser asignado a varios usuarios y un usuario puede tener varios roles.
     """
     users: Mapped[List["DBUser"]] = relationship(
         secondary="users_roles", back_populates="roles", passive_deletes=True
@@ -117,17 +116,15 @@ class DBCategory(Base):
     slug: Mapped[str] = mapped_column(String(80), nullable=False, unique=True)
 
     """
-    Relación uno a muchos con la tabla DBPost. Una categoría puede tener 
-    muchas publicaciones, pero una publicación solo puede pertenecer a una 
-    categoría.
+    Relación uno a muchos con la tabla DBPost. Una categoría puede tener muchas publicaciones, 
+    pero una publicación solo puede pertenecer a una categoría.
     """
     posts: Mapped[List["DBPost"]] = relationship(back_populates="category")
 
 
 """
 Class DBPost - Table "posts"
-Representa una publicación con información como nombre, slug, descripción, 
-autor, categoría y etiquetas.
+Representa una publicación con información como nombre, slug, descripción, autor, categoría y etiquetas.
 """
 
 
@@ -156,9 +153,8 @@ class DBPost(TimeStampedModel):
     category: Mapped["DBCategory"] = relationship(back_populates="posts")
 
     """
-    Relación muchos a muchos con la tabla DBTag a través de la tabla de 
-    asociación DBPostTag. Una publicación puede tener varias etiquetas y una 
-    etiqueta puede ser asignada a varias publicaciones. 
+    Relación muchos a muchos con la tabla DBTag a través de la tabla de asociación DBPostTag. 
+    Una publicación puede tener varias etiquetas y una etiqueta puede ser asignada a varias publicaciones. 
     """
     tags: Mapped[List["DBTag"]] = relationship(
         secondary="posts_tags", back_populates="posts", passive_deletes=True
@@ -196,9 +192,8 @@ class DBTag(TimeStampedModel):
     slug: Mapped[str] = mapped_column(String(80), nullable=False, unique=True)
 
     """
-    Relación muchos a muchos con la tabla DBPost a través de la tabla de 
-    asociación DBPostTag. Una etiqueta puede ser asignada a varias 
-    publicaciones y una publicación puede tener varias etiquetas.
+    Relación muchos a muchos con la tabla DBPost a través de la tabla de asociación DBPostTag. 
+    Una etiqueta puede ser asignada a varias publicaciones y una publicación puede tener varias etiquetas.
     """
     posts: Mapped[List["DBPost"]] = relationship(
         secondary="posts_tags", back_populates="tags", passive_deletes=True
