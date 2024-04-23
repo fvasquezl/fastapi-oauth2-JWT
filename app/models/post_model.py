@@ -27,8 +27,8 @@ class PostCreate(PostBase):
         return v
 
 
-class PostCreateWithTags(PostCreate):
-    tags: Optional[List[int]] = None
+# class PostCreateWithPosts(PostBase):
+#     tags: Optional[List[int]] = None
 
 
 class PostUpdate(BaseModel):
@@ -56,10 +56,15 @@ def read_db_post(post_id: int, session: Session) -> DBPost:
 
 
 def create_db_post(
-    current_user, category: Category, post: PostCreate, tags: Tag, session: Session
+    current_user,
+    category: Category,
+    post: PostCreate,
+    tags: List[int],
+    session: Session,
 ) -> DBPost:
     slug = slugify(post.name)
-    db_post = DBPost(**post.model_dump())
+    # tags = post.tags
+    db_post = DBPost(**post.model_dump(exclude="tags"))
     db_post.slug = slug
     db_post.author = current_user
     db_post.category = category

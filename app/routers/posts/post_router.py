@@ -11,7 +11,6 @@ from app.db.core import DBCategory, get_db, NotFoundError
 from app.models.post_model import (
     Post,
     PostCreate,
-    PostCreateWithTags,
     PostUpdate,
     create_db_post,
     delete_db_post,
@@ -24,6 +23,8 @@ from typing import Annotated, List
 
 from app.models.token_model import get_current_active_user
 from app.models.user_model import User
+from app.models.tag_model import Tag, get_tag_from_id
+
 
 router = APIRouter(
     prefix="/posts",
@@ -35,11 +36,11 @@ router = APIRouter(
 def create_post(
     current_user: Annotated[User, Depends(get_current_active_user)],
     category: Annotated[Category, Depends(get_category_from_id)],
+    tags: Annotated[Tag, Depends(get_tag_from_id)],
     post: PostCreate,
-    tags: List[int] = Body(...),
     db: Session = Depends(get_db),
 ) -> Post:
-    db_post = create_db_post(current_user, category, post, tags, db)
+    db_post = create_db_post(current_user, post, category, tags, db)
     return Post(**db_post.__dict__)
 
 

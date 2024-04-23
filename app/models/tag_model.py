@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from fastapi import Depends, HTTPException
 from pydantic import BaseModel, field_validator
 from slugify import slugify
@@ -33,15 +33,15 @@ class Tag(TagBase):
         from_attributes = True
 
 
-def get_tag_from_id(tag_id: int, db: Session = Depends(get_db)) -> DBTag:
-    tag = db.query(DBTag).filter(DBTag.id == tag_id).first()
-    if not tag:
-        raise HTTPException(
-            status_code=404,
-            detail="Tag does not exist",
-            headers={"X-Error": "Tag does not exist"},
-        )
-    return tag
+def get_tag_from_id(tags: List[int], db: Session = Depends(get_db)) -> DBTag:
+    for tag_id in tags:
+        if not is_valid_tag(db, tag_id):
+            raise HTTPException(
+                status_code=404,
+                detail="Tag does not exist",
+                headers={f"X-Error": "Tag {tag_id}does not exist"},
+            )
+    return tags
 
 
 def is_valid_tag(db: Session, tag_id: int) -> bool:
