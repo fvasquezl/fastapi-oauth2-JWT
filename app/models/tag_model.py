@@ -1,6 +1,6 @@
 from typing import List, Optional
 from fastapi import Depends, HTTPException
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 from slugify import slugify
 from app.db.core import DBTag, DBPost, NotFoundError, get_db, session_local
 from sqlalchemy.orm import Session
@@ -8,8 +8,7 @@ import re
 
 
 class TagBase(BaseModel):
-    name: str
-
+    name: str 
 
 class TagCreate(TagBase):
     @field_validator("name")
