@@ -2,13 +2,13 @@ from datetime import datetime
 from sqlite3 import IntegrityError
 
 from fastapi import HTTPException
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional
 from slugify import slugify
 from sqlalchemy.orm import Session
-from app.db.core import DBPost, NotFoundError, session_local
+from app.db.core import DBTag, DBPost, NotFoundError, session_local
 from app.models.category_model import Category, read_db_category
-from app.models.tag_model import Tag, read_db_tag
+from app.models.tag_model import Tag, TagCreate, read_db_tag, create_db_tag
 
 
 class PostBase(BaseModel):
@@ -17,18 +17,15 @@ class PostBase(BaseModel):
 
 
 class PostCreate(PostBase):
+    tag_names: list[str] = Field(..., min_items=1)
 
-    @field_validator("name")
-    def title_must_be_unique(cls, v, values):
-        db = session_local()
-        post_with_same_name = db.query(DBPost).filter(DBPost.name == v).first()
-        if post_with_same_name:
-            raise ValueError("Name must be unique")
-        return v
-
-
-# class PostCreateWithPosts(PostBase):
-#     tags: Optional[List[int]] = None
+    # @field_validator("name")
+    # def title_must_be_unique(cls, v, values):
+    #     db = session_local()
+    #     post_with_same_name = db.query(DBPost).filter(DBPost.name == v).first()
+    #     if post_with_same_name:
+    #         raise ValueError("Name must be unique")
+    #     return v
 
 
 class PostUpdate(BaseModel):
@@ -43,6 +40,7 @@ class Post(PostBase):
     author_id: int
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    tags: list[Tag] = []
 
     class Config:
         from_attributes = True
@@ -57,34 +55,37 @@ def read_db_post(post_id: int, session: Session) -> DBPost:
 
 def create_db_post(
     current_user,
-    category: Category,
     post: PostCreate,
-    tags: List[int],
-    session: Session,
+    category: Category,
+    db: Session,
 ) -> DBPost:
     slug = slugify(post.name)
-    # tags = post.tags
-    db_post = DBPost(**post.model_dump(exclude="tags"))
+
+    existing_tags = db.query(DBTag).filter(DBTag.name.in_(post.tag_names)).all()
+    tag_names_exist = [tag.name for tag in existing_tags]
+    new_tag_names = set(post.tag_names) - set(tag_names_exist)
+    new_tags = [create_db_tag(TagCreate(name=name), db) for name in new_tag_names]
+    all_tags = existing_tags + new_tags
+
+    post_data = post.model_dump(exclude="tag_names")
+    db_post = DBPost(**post_data, tags=all_tags)
     db_post.slug = slug
     db_post.author = current_user
     db_post.category = category
-    for tag_id in tags:
-        tag = read_db_tag(tag_id, session)
-        db_post.tags.append(tag)
-    try:
-        session.add(db_post)
-        session.commit()
-        session.refresh(db_post)
-    except IntegrityError as e:
-        session.rollback()
-        # Manejar error de integridad, por ejemplo, una clave duplicada
-        raise HTTPException(
-            status_code=400, detail="Error de integridad: {}".format(str(e))
-        )
-    except Exception as e:
-        # Manejar otros errores generales
-        session.rollback()
-        raise HTTPException(status_code=500, detail="Error al crear el post")
+    # try:
+    db.add(db_post)
+    db.commit()
+    db.refresh(db_post)
+    # except IntegrityError as e:
+    #     db.rollback()
+    #     # Manejar error de integridad, por ejemplo, una clave duplicada
+    #     raise HTTPException(
+    #         status_code=400, detail="Error de integridad: {}".format(str(e))
+    #     )
+    # except Exception as e:
+    #     # Manejar otros errores generales
+    #     db.rollback()
+    #     raise HTTPException(status_code=500, detail="Error al crear el post")
 
     return db_post
 

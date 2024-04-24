@@ -36,11 +36,10 @@ router = APIRouter(
 def create_post(
     current_user: Annotated[User, Depends(get_current_active_user)],
     category: Annotated[Category, Depends(get_category_from_id)],
-    tags: Annotated[Tag, Depends(get_tag_from_id)],
     post: PostCreate,
     db: Session = Depends(get_db),
 ) -> Post:
-    db_post = create_db_post(current_user, post, category, tags, db)
+    db_post = create_db_post(current_user, post, category, db)
     return Post(**db_post.__dict__)
 
 
